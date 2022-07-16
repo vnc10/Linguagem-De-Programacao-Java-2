@@ -1,3 +1,7 @@
+out/
+.idea/
+production/
+
 # Compiled class file
 *.class
 
