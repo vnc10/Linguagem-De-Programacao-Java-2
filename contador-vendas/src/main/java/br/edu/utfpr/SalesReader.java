@@ -114,16 +114,17 @@ public class SalesReader {
     }
 
     public Map<Integer, Map<String, Long>> countCompletedSalesByPaymentMethodAndGroupingByYear() {
-        // TODO implementar
-        return Map.of();
+        return sales.stream()
+                .filter(Sale::isCompleted)
+                .collect(Collectors.groupingBy(sale -> sale.getSaleDate().getYear(), (Collectors.groupingBy(Sale::getPaymentMethod, Collectors.counting()))));
     }
 
     public Map<String, BigDecimal> top3BestSellers() {
 
         var asd = sales.stream()
-                .sorted(Comparator.comparing(Sale::getValue))
                 .filter(Sale::isCompleted)
-                .collect(Collectors.groupingBy(Sale::getSeller, mapping(Sale::getValue, Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))));
+                .collect(Collectors.groupingBy(Sale::getSeller,
+                        mapping(Sale::getValue, Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))));
 
 //        System.out.println(asd);
 
