@@ -85,25 +85,19 @@ public class SalesReader {
     }
 
     public BigDecimal totalSalesByStatusAndMonth(Sale.Status status, Month... months) {
-//        List<Month> months1 = Arrays.stream(months).toList();
-        //System.out.println(months1);
+        List<Month> monthList = Arrays.stream(months).toList();
 
-//        Arrays.stream(months).map(ArrayList::get);
-
-        //months.
-        //months1.get(0);
-//        return sales.stream()
-//                .filter(sale -> sale.getStatus().equals(status))
-//                .filter(sale -> sale.getSaleDate().getMonth().equals(months1.get(0)))
-//                .map(Sale::getValue)
-//                .reduce(BigDecimal.ZERO, BigDecimal::add);
-//        return BigDecimal.ZERO;
-        return sales.stream()
-                .filter(sale -> sale.getStatus().equals(status))
-                .filter(sale -> sale.getSaleDate().getMonth().equals(
-                        Arrays.stream(months).toList().iterator().next()))
-                .map(Sale::getValue)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal sum = new BigDecimal(0);
+        for (Sale sale : sales) {
+            if (sale.getStatus().equals(status)) {
+                for (Month month : monthList) {
+                    if (sale.getSaleDate().getMonth().equals(month)) {
+                        sum = sum.add(sale.getValue());
+                    }
+                }
+            }
+        }
+        return sum;
     }
 
     public Map<String, Long> countCompletedSalesByDepartment() {
@@ -120,21 +114,14 @@ public class SalesReader {
     }
 
     public Map<String, BigDecimal> top3BestSellers() {
-
-        var asd = sales.stream()
+        return sales.stream()
                 .filter(Sale::isCompleted)
-                .collect(Collectors.groupingBy(Sale::getSeller,
-                        mapping(Sale::getValue, Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))));
-
-//        System.out.println(asd);
-
-//        var teste2 = sales.stream()
-//                .sorted(Comparator.comparing(Sale::getValue))
-//                .filter(Sale::isCompleted)
-//                .collect(Collectors.groupingBy(Sale::getSeller, Collectors.summingInt(Sale::getValue)));
-
-       // System.out.println(teste2);
-
-        return Map.of();
+                .collect(Collectors.groupingBy(Sale::getSeller, mapping(Sale::getValue, Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))))
+                .entrySet().stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new))
+                .entrySet().stream()
+                .limit(3)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
     }
 }
